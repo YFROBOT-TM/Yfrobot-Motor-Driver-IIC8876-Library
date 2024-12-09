@@ -48,14 +48,14 @@ uint8_t MDIIC8876::init(void)
         reset(0);
 
     // 电机驱动引脚配置
-    pinMode(M1PinA, MDIIC8876_ANALOG_OUTPUT);
-    pinMode(M1PinB, MDIIC8876_ANALOG_OUTPUT);
-    pinMode(M2PinA, MDIIC8876_ANALOG_OUTPUT);
-    pinMode(M2PinB, MDIIC8876_ANALOG_OUTPUT);
-    pinMode(M3PinA, MDIIC8876_ANALOG_OUTPUT);
-    pinMode(M3PinB, MDIIC8876_ANALOG_OUTPUT);
-    pinMode(M4PinA, MDIIC8876_ANALOG_OUTPUT);
-    pinMode(M4PinB, MDIIC8876_ANALOG_OUTPUT);
+    pinMode(M1EN, MDIIC8876_ANALOG_OUTPUT);
+    pinMode(M1PH, MDIIC8876_DIGITAL_OUTPUT);
+    pinMode(M2EN, MDIIC8876_ANALOG_OUTPUT);
+    pinMode(M2PH, MDIIC8876_DIGITAL_OUTPUT);
+    pinMode(M3EN, MDIIC8876_ANALOG_OUTPUT);
+    pinMode(M3PH, MDIIC8876_DIGITAL_OUTPUT);
+    pinMode(M4EN, MDIIC8876_ANALOG_OUTPUT);
+    pinMode(M4PH, MDIIC8876_DIGITAL_OUTPUT);
 
     // Communication test. We'll read from two registers with different
     // default values to verify communication.
@@ -658,26 +658,22 @@ bool MDIIC8876::writeBytes(uint8_t firstRegisterAddress, uint8_t *writeArray, ui
  * 本函数用于通过模拟输出控制电机的速度。根据传入的速度值，决定电机的旋转方向和速度。
  * 通过调整两个引脚的PWM值，实现电机的正转、反转和停止。
  * 
- * @param pinA 电机控制的第一个引脚，用于输出PWM信号。
- * @param pinB 电机控制的第二个引脚，用于输出PWM信号。
+ * @param pin_en 电机控制的第一个引脚，用于输出PWM信号，控制电机速度。
+ * @param pin_ph 电机控制的第二个引脚，用于输出高低电平，控制电机方向。
  * @param speed 电机的速度设定值，可以为正、负或零。
  *               正值表示电机正转，值越大速度越快。
  *               负值表示电机反转，值越小速度越快。
  *               零表示电机停止。
  */
-void MDIIC8876::setMotorSpeed(int pinA, int pinB, int speed) {
-    // 当速度大于0时，电机正转，将pinA设为速度值，pinB设为0。
-    if (speed > 0) {
-        analogWrite(pinA, speed);
-        analogWrite(pinB, 0);
-    // 当速度小于0时，电机反转，将pinA设为速度的绝对值，pinB设为0。
-    } else if (speed < 0) {
-        analogWrite(pinB, abs(speed));
-        analogWrite(pinA, 0);
-    // 当速度为0时，电机停止，将两个引脚都设为最高PWM值，模拟全速刹车效果。
-    } else {
-        analogWrite(pinA, 255);
-        analogWrite(pinB, 255);
+void MDIIC8876::setMotorSpeed(int pin_en, int pin_ph, int speed) {
+    if (speed > 0) {    // 当速度大于0时，电机正转，pin_ph设为1，将pin_en设为速度值。
+        digitalWrite(pin_ph, 1); // 正转
+        analogWrite(pin_en, speed);
+    } else if (speed < 0) { // 当速度小于0时，电机反转，pin_ph设为0，将pin_en设为速度的绝对值。
+        digitalWrite(pin_ph, 0); // 反转
+        analogWrite(pin_en, abs(speed));
+    } else {    // 当速度为0时，电机停止，EN引脚设为0，刹车。
+        analogWrite(pin_en, 0);
     }
 }
 
@@ -701,10 +697,10 @@ void MDIIC8876::setMotor(int m1Speed, int m2Speed, int m3Speed, int m4Speed) {
     m4Speed = constrain(m4Speed, -255, 255);
 
     // 调用函数设置每个电机的速度
-    setMotorSpeed(M1PinA, M1PinB, m1Speed);
-    setMotorSpeed(M2PinA, M2PinB, m2Speed);
-    setMotorSpeed(M3PinA, M3PinB, m3Speed);
-    setMotorSpeed(M4PinA, M4PinB, m4Speed);
+    setMotorSpeed(M1EN, M1PH, m1Speed);
+    setMotorSpeed(M2EN, M2PH, m2Speed);
+    setMotorSpeed(M3EN, M3PH, m3Speed);
+    setMotorSpeed(M4EN, M4PH, m4Speed);
 }
 
 /**
@@ -726,19 +722,19 @@ void MDIIC8876::setMotor(int motorId, int speed) {
 
     // 根据电机编号设置对应电机的速度
     if(motorId == 1){
-        setMotorSpeed(M1PinA, M1PinB, speed);
+        setMotorSpeed(M1EN, M1PH, speed);
     } else if(motorId == 2){
-        setMotorSpeed(M2PinA, M2PinB, speed);
+        setMotorSpeed(M2EN, M2PH, speed);
     } else if(motorId == 3){
-        setMotorSpeed(M3PinA, M3PinB, speed);
+        setMotorSpeed(M3EN, M3PH, speed);
     } else if(motorId == 4){
-        setMotorSpeed(M4PinA, M4PinB, speed);
+        setMotorSpeed(M4EN, M4PH, speed);
     } else {
         // 如果电机ID无效，则同时设置所有电机的速度
-        setMotorSpeed(M1PinA, M1PinB, speed);
-        setMotorSpeed(M2PinA, M2PinB, speed);
-        setMotorSpeed(M3PinA, M3PinB, speed);
-        setMotorSpeed(M4PinA, M4PinB, speed);
+        setMotorSpeed(M1EN, M1PH, speed);
+        setMotorSpeed(M2EN, M2PH, speed);
+        setMotorSpeed(M3EN, M3PH, speed);
+        setMotorSpeed(M4EN, M4PH, speed);
     }
 }
 

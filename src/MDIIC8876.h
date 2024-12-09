@@ -28,7 +28,8 @@
 #define MDIIC8876_SOFTWARE_RESET 0
 #define MDIIC8876_HARDWARE_RESET 1
 
-#define MDIIC8876_ANALOG_OUTPUT 0x3 // To set a pin mode for PWM output
+#define MDIIC8876_DIGITAL_OUTPUT 0x0    // To set a pin mode for output
+#define MDIIC8876_ANALOG_OUTPUT 0x3     // To set a pin mode for PWM output
 
 #define   MDIIC8876_REG_INPUT_DISABLE   0x00  //  RegInputDisableA Input buffer disable register _ I/O[7_0] (Bank A) 0000 0000
 #define   MDIIC8876_REG_LONG_SLEW     0x01  //  RegLongSlewA Output buffer long slew register _ I/O[7_0] (Bank A) 0000 0000
@@ -84,14 +85,14 @@
 #define MDIIC8876_ADDRESS  0x20  // SX1508 I2C address
 
 // MDIIC8876 MOTOR PIN 
-#define M1PinA 0
-#define M1PinB 1
-#define M2PinA 2
-#define M2PinB 3
-#define M3PinA 4
-#define M3PinB 5
-#define M4PinA 6
-#define M4PinB 7
+#define M1EN 0
+#define M1PH 1
+#define M2EN 2
+#define M2PH 3
+#define M3EN 4
+#define M3PH 5
+#define M4EN 6
+#define M4PH 7
 
 class MDIIC8876 {
 
