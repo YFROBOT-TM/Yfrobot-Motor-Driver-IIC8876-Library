@@ -1,6 +1,6 @@
 /******************************************************************************
-  MDIIC1508.h
-  MotorDriver IIC1508 I/O Expander Library File
+  MDIIC8876.h
+  MotorDriver IIC8876 I/O Expander Library File
   Creation Date: 06-11-2024
     @ YFROBOT
 ******************************************************************************/
@@ -8,82 +8,82 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-#ifndef MDIIC1508_H
-#define MDIIC1508_H
+#ifndef MDIIC8876_H
+#define MDIIC8876_H
 
-#ifndef MDIIC1508_I2C_ERROR_OK
-#define MDIIC1508_I2C_ERROR_OK 0
+#ifndef MDIIC8876_I2C_ERROR_OK
+#define MDIIC8876_I2C_ERROR_OK 0
 #endif
 
-#define MDIIC1508_RECEIVE_TIMEOUT_VALUE 1000 // Timeout for I2C receive
+#define MDIIC8876_RECEIVE_TIMEOUT_VALUE 1000 // Timeout for I2C receive
 
 // These are used for setting LED driver to linear or log mode:
-#define MDIIC1508_LINEAR 0
-#define MDIIC1508_LOGARITHMIC 1
+#define MDIIC8876_LINEAR 0
+#define MDIIC8876_LOGARITHMIC 1
 
 // These are used for clock config:
-#define MDIIC1508_INTERNAL_CLOCK_2MHZ 2
-#define MDIIC1508_EXTERNAL_CLOCK 1
+#define MDIIC8876_INTERNAL_CLOCK_2MHZ 2
+#define MDIIC8876_EXTERNAL_CLOCK 1
 
-#define MDIIC1508_SOFTWARE_RESET 0
-#define MDIIC1508_HARDWARE_RESET 1
+#define MDIIC8876_SOFTWARE_RESET 0
+#define MDIIC8876_HARDWARE_RESET 1
 
-#define MDIIC1508_ANALOG_OUTPUT 0x3 // To set a pin mode for PWM output
+#define MDIIC8876_ANALOG_OUTPUT 0x3 // To set a pin mode for PWM output
 
-#define   MDIIC1508_REG_INPUT_DISABLE   0x00  //  RegInputDisableA Input buffer disable register _ I/O[7_0] (Bank A) 0000 0000
-#define   MDIIC1508_REG_LONG_SLEW     0x01  //  RegLongSlewA Output buffer long slew register _ I/O[7_0] (Bank A) 0000 0000
-#define   MDIIC1508_REG_LOW_DRIVE     0x02  //  RegLowDriveA Output buffer low drive register _ I/O[7_0] (Bank A) 0000 0000
-#define   MDIIC1508_REG_PULL_UP       0x03  //  RegPullUpA Pull_up register _ I/O[7_0] (Bank A) 0000 0000
-#define   MDIIC1508_REG_PULL_DOWN     0x04  //  RegPullDownA Pull_down register _ I/O[7_0] (Bank A) 0000 0000
-#define   MDIIC1508_REG_OPEN_DRAIN      0x05  //  RegOpenDrainA Open drain register _ I/O[7_0] (Bank A) 0000 0000
-#define   MDIIC1508_REG_POLARITY      0x06  //  RegPolarityA Polarity register _ I/O[7_0] (Bank A) 0000 0000
-#define   MDIIC1508_REG_DIR         0x07  //  RegDirA Direction register _ I/O[7_0] (Bank A) 1111 1111
-#define   MDIIC1508_REG_DATA        0x08  //  RegDataA Data register _ I/O[7_0] (Bank A) 1111 1111*
-#define   MDIIC1508_REG_INTERRUPT_MASK    0x09  //  RegInterruptMaskA Interrupt mask register _ I/O[7_0] (Bank A) 1111 1111
-#define   MDIIC1508_REG_SENSE_HIGH      0x0A  //  RegSenseHighA Sense register for I/O[7:4] 0000 0000
-#define   MDIIC1508_REG_SENSE_LOW     0x0B  //  RegSenseLowA Sense register for I/O[3:0] 0000 0000
-#define   MDIIC1508_REG_INTERRUPT_SOURCE  0x0C  //  RegInterruptSourceA Interrupt source register _ I/O[7_0] (Bank A) 0000 0000
-#define   MDIIC1508_REG_EVENT_STATUS    0x0D  //  RegEventStatusA Event status register _ I/O[7_0] (Bank A) 0000 0000
-#define   MDIIC1508_REG_LEVEL_SHIFTER   0x0E  //  RegLevelShifter1 Level shifter register 0000 0000
-#define   MDIIC1508_REG_CLOCK       0x0F  //  RegClock Clock management register 0000 0000
-#define   MDIIC1508_REG_MISC        0x10  //  RegMisc Miscellaneous device settings register 0000 0000
-#define   MDIIC1508_REG_LED_DRIVER_ENABLE 0x11  //  RegLEDDriverEnableA LED driver enable register _ I/O[7_0] (Bank A) 0000 0000
+#define   MDIIC8876_REG_INPUT_DISABLE   0x00  //  RegInputDisableA Input buffer disable register _ I/O[7_0] (Bank A) 0000 0000
+#define   MDIIC8876_REG_LONG_SLEW     0x01  //  RegLongSlewA Output buffer long slew register _ I/O[7_0] (Bank A) 0000 0000
+#define   MDIIC8876_REG_LOW_DRIVE     0x02  //  RegLowDriveA Output buffer low drive register _ I/O[7_0] (Bank A) 0000 0000
+#define   MDIIC8876_REG_PULL_UP       0x03  //  RegPullUpA Pull_up register _ I/O[7_0] (Bank A) 0000 0000
+#define   MDIIC8876_REG_PULL_DOWN     0x04  //  RegPullDownA Pull_down register _ I/O[7_0] (Bank A) 0000 0000
+#define   MDIIC8876_REG_OPEN_DRAIN      0x05  //  RegOpenDrainA Open drain register _ I/O[7_0] (Bank A) 0000 0000
+#define   MDIIC8876_REG_POLARITY      0x06  //  RegPolarityA Polarity register _ I/O[7_0] (Bank A) 0000 0000
+#define   MDIIC8876_REG_DIR         0x07  //  RegDirA Direction register _ I/O[7_0] (Bank A) 1111 1111
+#define   MDIIC8876_REG_DATA        0x08  //  RegDataA Data register _ I/O[7_0] (Bank A) 1111 1111*
+#define   MDIIC8876_REG_INTERRUPT_MASK    0x09  //  RegInterruptMaskA Interrupt mask register _ I/O[7_0] (Bank A) 1111 1111
+#define   MDIIC8876_REG_SENSE_HIGH      0x0A  //  RegSenseHighA Sense register for I/O[7:4] 0000 0000
+#define   MDIIC8876_REG_SENSE_LOW     0x0B  //  RegSenseLowA Sense register for I/O[3:0] 0000 0000
+#define   MDIIC8876_REG_INTERRUPT_SOURCE  0x0C  //  RegInterruptSourceA Interrupt source register _ I/O[7_0] (Bank A) 0000 0000
+#define   MDIIC8876_REG_EVENT_STATUS    0x0D  //  RegEventStatusA Event status register _ I/O[7_0] (Bank A) 0000 0000
+#define   MDIIC8876_REG_LEVEL_SHIFTER   0x0E  //  RegLevelShifter1 Level shifter register 0000 0000
+#define   MDIIC8876_REG_CLOCK       0x0F  //  RegClock Clock management register 0000 0000
+#define   MDIIC8876_REG_MISC        0x10  //  RegMisc Miscellaneous device settings register 0000 0000
+#define   MDIIC8876_REG_LED_DRIVER_ENABLE 0x11  //  RegLEDDriverEnableA LED driver enable register _ I/O[7_0] (Bank A) 0000 0000
 // Debounce and Keypad Engine   
-#define   MDIIC1508_REG_DEBOUNCE_CONFIG   0x12  //  RegDebounceConfig Debounce configuration register 0000 0000
-#define   MDIIC1508_REG_DEBOUNCE_ENABLE   0x13  //  RegDebounceEnableA Debounce enable register _ I/O[7_0] (Bank A) 0000 0000
-#define   MDIIC1508_REG_KEY_CONFIG      0x14  //  RegKeyConfig1 Key scan configuration register 0000 0000
-#define   MDIIC1508_REG_KEY_DATA      0x15  //  RegKeyData1 Key value 1111 1111
+#define   MDIIC8876_REG_DEBOUNCE_CONFIG   0x12  //  RegDebounceConfig Debounce configuration register 0000 0000
+#define   MDIIC8876_REG_DEBOUNCE_ENABLE   0x13  //  RegDebounceEnableA Debounce enable register _ I/O[7_0] (Bank A) 0000 0000
+#define   MDIIC8876_REG_KEY_CONFIG      0x14  //  RegKeyConfig1 Key scan configuration register 0000 0000
+#define   MDIIC8876_REG_KEY_DATA      0x15  //  RegKeyData1 Key value 1111 1111
 // LED Driver (PWM, blinking, breathing)    
-#define   MDIIC1508_REG_I_ON_0        0x16  //  RegIOn0 ON intensity register for I/O[0] 1111 1111
-#define   MDIIC1508_REG_I_ON_1        0x17  //  RegIOn1 ON intensity register for I/O[1] 1111 1111
-#define   MDIIC1508_REG_T_ON_2        0x18  //  RegTOn2 ON time register for I/O[2] 0000 0000
-#define   MDIIC1508_REG_I_ON_2        0x19  //  RegIOn2 ON intensity register for I/O[2] 1111 1111
-#define   MDIIC1508_REG_OFF_2       0x1A  //  RegOff2 OFF time/intensity register for I/O[2] 0000 0000
-#define   MDIIC1508_REG_T_ON_3        0x1B  //  RegTOn3 ON time register for I/O[3] 0000 0000
-#define   MDIIC1508_REG_I_ON_3        0x1C  //  RegIOn3 ON intensity register for I/O[3] 1111 1111
-#define   MDIIC1508_REG_OFF_3       0x1D  //  RegOff3 OFF time/intensity register for I/O[3] 0000 0000
-#define   MDIIC1508_REG_T_RISE_3      0x1E  //  RegTRise3 Fade in register for I/O[3] 0000 0000
-#define   MDIIC1508_REG_T_FALL_3      0x1F  //  RegTFall3 Fade out register for I/O[3] 0000 0000
-#define   MDIIC1508_REG_I_ON_4        0x20  //  RegIOn4 ON intensity register for I/O[4] 1111 1111
-#define   MDIIC1508_REG_I_ON_5        0x21  //  RegIOn5 ON intensity register for I/O[5] 1111 1111
-#define   MDIIC1508_REG_T_ON_6        0x22  //  RegTOn6 ON time register for I/O[6] 0000 0000
-#define   MDIIC1508_REG_I_ON_6        0x23  //  RegIOn6 ON intensity register for I/O[6] 1111 1111
-#define   MDIIC1508_REG_OFF_6       0x24  //  RegOff6 OFF time/intensity register for I/O[6] 0000 0000
-#define   MDIIC1508_REG_T_ON_7        0x25  //  RegTOn7 ON time register for I/O[7] 0000 0000
-#define   MDIIC1508_REG_I_ON_7        0x26  //  RegIOn7 ON intensity register for I/O[7] 1111 1111
-#define   MDIIC1508_REG_OFF_7       0x27  //  RegOff7 OFF time/intensity register for I/O[7] 0000 0000
-#define   MDIIC1508_REG_T_RISE_7      0x28  //  RegTRise7 Fade in register for I/O[7] 0000 0000
-#define   MDIIC1508_REG_T_FALL_7      0x29  //  RegTFall7 Fade out register for I/O[7] 0000 0000
+#define   MDIIC8876_REG_I_ON_0        0x16  //  RegIOn0 ON intensity register for I/O[0] 1111 1111
+#define   MDIIC8876_REG_I_ON_1        0x17  //  RegIOn1 ON intensity register for I/O[1] 1111 1111
+#define   MDIIC8876_REG_T_ON_2        0x18  //  RegTOn2 ON time register for I/O[2] 0000 0000
+#define   MDIIC8876_REG_I_ON_2        0x19  //  RegIOn2 ON intensity register for I/O[2] 1111 1111
+#define   MDIIC8876_REG_OFF_2       0x1A  //  RegOff2 OFF time/intensity register for I/O[2] 0000 0000
+#define   MDIIC8876_REG_T_ON_3        0x1B  //  RegTOn3 ON time register for I/O[3] 0000 0000
+#define   MDIIC8876_REG_I_ON_3        0x1C  //  RegIOn3 ON intensity register for I/O[3] 1111 1111
+#define   MDIIC8876_REG_OFF_3       0x1D  //  RegOff3 OFF time/intensity register for I/O[3] 0000 0000
+#define   MDIIC8876_REG_T_RISE_3      0x1E  //  RegTRise3 Fade in register for I/O[3] 0000 0000
+#define   MDIIC8876_REG_T_FALL_3      0x1F  //  RegTFall3 Fade out register for I/O[3] 0000 0000
+#define   MDIIC8876_REG_I_ON_4        0x20  //  RegIOn4 ON intensity register for I/O[4] 1111 1111
+#define   MDIIC8876_REG_I_ON_5        0x21  //  RegIOn5 ON intensity register for I/O[5] 1111 1111
+#define   MDIIC8876_REG_T_ON_6        0x22  //  RegTOn6 ON time register for I/O[6] 0000 0000
+#define   MDIIC8876_REG_I_ON_6        0x23  //  RegIOn6 ON intensity register for I/O[6] 1111 1111
+#define   MDIIC8876_REG_OFF_6       0x24  //  RegOff6 OFF time/intensity register for I/O[6] 0000 0000
+#define   MDIIC8876_REG_T_ON_7        0x25  //  RegTOn7 ON time register for I/O[7] 0000 0000
+#define   MDIIC8876_REG_I_ON_7        0x26  //  RegIOn7 ON intensity register for I/O[7] 1111 1111
+#define   MDIIC8876_REG_OFF_7       0x27  //  RegOff7 OFF time/intensity register for I/O[7] 0000 0000
+#define   MDIIC8876_REG_T_RISE_7      0x28  //  RegTRise7 Fade in register for I/O[7] 0000 0000
+#define   MDIIC8876_REG_T_FALL_7      0x29  //  RegTFall7 Fade out register for I/O[7] 0000 0000
 //  Miscellaneous   
-#define   MDIIC1508_REG_HIGH_INPUT      0x2A  //  RegHighInputA High input enable register _ I/O[7_0] (Bank A) 0000 0000
+#define   MDIIC8876_REG_HIGH_INPUT      0x2A  //  RegHighInputA High input enable register _ I/O[7_0] (Bank A) 0000 0000
 //  Software Reset    
-#define   MDIIC1508_REG_RESET       0x7D  //  RegReset Software reset register 0000 0000
-#define   MDIIC1508_REG_TEST_1        0x7E  //  RegTest1 Test register 0000 0000
-#define   MDIIC1508_REG_TEST_2        0x7F  //  RegTest2 Test register 0000 0000
+#define   MDIIC8876_REG_RESET       0x7D  //  RegReset Software reset register 0000 0000
+#define   MDIIC8876_REG_TEST_1        0x7E  //  RegTest1 Test register 0000 0000
+#define   MDIIC8876_REG_TEST_2        0x7F  //  RegTest2 Test register 0000 0000
 
-#define MDIIC1508_ADDRESS  0x20  // SX1508 I2C address
+#define MDIIC8876_ADDRESS  0x20  // SX1508 I2C address
 
-// MDIIC1508 MOTOR PIN 
+// MDIIC8876 MOTOR PIN 
 #define M1PinA 0
 #define M1PinB 1
 #define M2PinA 2
@@ -93,29 +93,29 @@
 #define M4PinA 6
 #define M4PinB 7
 
-class MDIIC1508 {
+class MDIIC8876 {
 
 private: 
-    byte MDIIC1508_REG_I_ON[8] = {MDIIC1508_REG_I_ON_0, MDIIC1508_REG_I_ON_1, MDIIC1508_REG_I_ON_2, MDIIC1508_REG_I_ON_3,
-            MDIIC1508_REG_I_ON_4, MDIIC1508_REG_I_ON_5, MDIIC1508_REG_I_ON_6, MDIIC1508_REG_I_ON_7};
+    byte MDIIC8876_REG_I_ON[8] = {MDIIC8876_REG_I_ON_0, MDIIC8876_REG_I_ON_1, MDIIC8876_REG_I_ON_2, MDIIC8876_REG_I_ON_3,
+            MDIIC8876_REG_I_ON_4, MDIIC8876_REG_I_ON_5, MDIIC8876_REG_I_ON_6, MDIIC8876_REG_I_ON_7};
             
-    byte MDIIC1508_REG_T_ON[8] = {0xFF, 0xFF, MDIIC1508_REG_T_ON_2, MDIIC1508_REG_T_ON_3,
-            0xFF, 0xFF, MDIIC1508_REG_T_ON_6, MDIIC1508_REG_T_ON_7};
+    byte MDIIC8876_REG_T_ON[8] = {0xFF, 0xFF, MDIIC8876_REG_T_ON_2, MDIIC8876_REG_T_ON_3,
+            0xFF, 0xFF, MDIIC8876_REG_T_ON_6, MDIIC8876_REG_T_ON_7};
             
-    byte MDIIC1508_REG_OFF[8] = {0xFF, 0xFF, MDIIC1508_REG_OFF_2, MDIIC1508_REG_OFF_3,
-            0xFF, 0xFF, MDIIC1508_REG_OFF_6, MDIIC1508_REG_OFF_7};
+    byte MDIIC8876_REG_OFF[8] = {0xFF, 0xFF, MDIIC8876_REG_OFF_2, MDIIC8876_REG_OFF_3,
+            0xFF, 0xFF, MDIIC8876_REG_OFF_6, MDIIC8876_REG_OFF_7};
   
-    byte MDIIC1508_REG_T_RISE[8] = {0xFF, 0xFF, 0xFF, MDIIC1508_REG_T_RISE_3,
-            0xFF, 0xFF, 0xFF,MDIIC1508_REG_T_RISE_7};
+    byte MDIIC8876_REG_T_RISE[8] = {0xFF, 0xFF, 0xFF, MDIIC8876_REG_T_RISE_3,
+            0xFF, 0xFF, 0xFF,MDIIC8876_REG_T_RISE_7};
             
-    byte MDIIC1508_REG_T_FALL[8] = {0xFF, 0xFF, 0xFF, MDIIC1508_REG_T_FALL_3,
-            0xFF, 0xFF, 0xFF, MDIIC1508_REG_T_FALL_7};
+    byte MDIIC8876_REG_T_FALL[8] = {0xFF, 0xFF, 0xFF, MDIIC8876_REG_T_FALL_3,
+            0xFF, 0xFF, 0xFF, MDIIC8876_REG_T_FALL_7};
           
     // These private functions are not available to Arduino sketches.
 	// If you need to read or write directly to registers, consider putting the writeByte, readByte functions in the public section
 	TwoWire *_i2cPort;
     
-	uint8_t deviceAddress; // I2C Address of MDIIC1508
+	uint8_t deviceAddress; // I2C Address of MDIIC8876
 	
     // Pin definitions:
 	uint8_t pinInterrupt;
@@ -146,18 +146,18 @@ private:
 
 public:
 	// -----------------------------------------------------------------------------
-	// Constructor - MDIIC1508: This function sets up the pins connected to the
-	//		MDIIC1508, and sets up the private deviceAddress variable.
+	// Constructor - MDIIC8876: This function sets up the pins connected to the
+	//		MDIIC8876, and sets up the private deviceAddress variable.
 	// -----------------------------------------------------------------------------
-	MDIIC1508();
+	MDIIC8876();
 
-    ~MDIIC1508();
+    ~MDIIC8876();
 	// Legacy below. Use 0-parameter constructor, and set these parameters in the
 	// begin function:
-	MDIIC1508(uint8_t address, uint8_t resetPin = 255, uint8_t interruptPin = 255, uint8_t oscillatorPin = 255);
+	MDIIC8876(uint8_t address, uint8_t resetPin = 255, uint8_t interruptPin = 255, uint8_t oscillatorPin = 255);
 
 	// -----------------------------------------------------------------------------
-	// begin(uint8_t address, uint8_t resetPin): This function initializes the MDIIC1508.
+	// begin(uint8_t address, uint8_t resetPin): This function initializes the MDIIC8876.
 	//  	It requires wire to already be begun (previous versions did not do this), resets the IC, and tries to read some
 	//  	registers to prove it's connected.
 	// Inputs:
@@ -176,7 +176,7 @@ public:
 	// reset(bool hardware): This function resets the SX1508 - either a hardware
 	//		reset or software. A hardware reset (hardware parameter = 1) pulls the
 	//		reset line low, pausing, then pulling the reset line high. A software
-	//		reset writes a 0x12 then 0x34 to the MDIIC1508_REG_RESET as outlined in the
+	//		reset writes a 0x12 then 0x34 to the MDIIC8876_REG_RESET as outlined in the
 	//		datasheet.
 	//
 	//  Input:
@@ -312,15 +312,15 @@ public:
 	//		- The breathable pins are 4, 5, 6, 7, 12, 13, 14, 15 only. If tRise and
 	//			tFall are set on 0-3 or 8-11 those pins will still only blink.
 	// 		- ledDriverInit should be called on the pin to be blinked before this,
-	//  	  Or call pinMode(<pin>, MDIIC1508_ANALOG_OUTPUT);
+	//  	  Or call pinMode(<pin>, MDIIC8876_ANALOG_OUTPUT);
 	// -----------------------------------------------------------------------------
-	void breathe(uint8_t pin, unsigned long tOn, unsigned long tOff, unsigned long rise, unsigned long fall, uint8_t onInt = 255, uint8_t offInt = 0, bool log = MDIIC1508_LINEAR);
+	void breathe(uint8_t pin, unsigned long tOn, unsigned long tOff, unsigned long rise, unsigned long fall, uint8_t onInt = 255, uint8_t offInt = 0, bool log = MDIIC8876_LINEAR);
 
 	// -----------------------------------------------------------------------------
 	// sync(void): this function resets the PWM/Blink/Fade counters, syncing any
-	//		blinking LEDs. Bit 2 of MDIIC1508_REG_MISC is set, which alters the functionality
+	//		blinking LEDs. Bit 2 of MDIIC8876_REG_MISC is set, which alters the functionality
 	//		of the nReset pin. The nReset pin is toggled low->high, which should
-	//		reset all LED counters. Bit 2 of MDIIC1508_REG_MISC is again cleared, returning
+	//		reset all LED counters. Bit 2 of MDIIC8876_REG_MISC is again cleared, returning
 	//		nReset pin to POR functionality
 	// -----------------------------------------------------------------------------
 	void sync(void);
@@ -429,7 +429,7 @@ public:
 	//		- INTERNAL_CLOCK and EXTERNAL_CLOCK are defined in the header file.
 	//			Use those.
 	//		- This value defaults to internal.
-	//	- oscDivider: Sets the clock divider in MDIIC1508_REG_MISC.
+	//	- oscDivider: Sets the clock divider in MDIIC8876_REG_MISC.
 	//		- ClkX = fOSC / (2^(RegMisc[6:4] -1))
 	//		- This value defaults to 1.
 	//	- oscPinFunction: Allows you to set OSCIO as an input or output.
@@ -460,4 +460,4 @@ public:
 
 };
 
-#endif // MDIIC1508_library_H
+#endif // MDIIC8876_library_H

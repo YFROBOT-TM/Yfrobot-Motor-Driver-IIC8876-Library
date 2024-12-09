@@ -1,7 +1,7 @@
 #######################################
 # Classes, datatypes (KEYWORD1)
 #######################################
-MDIIC1508	KEYWORD1
+MDIIC8876	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
@@ -14,4 +14,4 @@ motorConfig	KEYWORD2
 #######################################
 # Constants (LITERAL1)
 #######################################
-MDIIC1508_ADDRESS	LITERAL1
+MDIIC8876_ADDRESS	LITERAL1

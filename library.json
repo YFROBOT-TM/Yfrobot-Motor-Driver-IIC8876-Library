@@ -1,11 +1,11 @@
 {
-    "name": "Yfrobot Motor Driver IIC1508 Library",
-    "keywords": "yfrobot, 1508, motor, driver, iic1508",
-    "description": "Library that makes Yfrobot Motor Driver IIC1508 work easy to use.",
+    "name": "Yfrobot Motor Driver IIC8876 Library",
+    "keywords": "yfrobot, 8876, motor, driver, iic8876",
+    "description": "Library that makes Yfrobot Motor Driver IIC8876 work easy to use.",
     "repository":
     {
         "type": "git",
-        "url": "https://github.com/YFROBOT-TM/Yfrobot-Motor-Driver-IIC1508-Library.git"
+        "url": "https://github.com/YFROBOT-TM/Yfrobot-Motor-Driver-IIC8876-Library.git"
     },
     "frameworks": "arduino",
     "platforms": [

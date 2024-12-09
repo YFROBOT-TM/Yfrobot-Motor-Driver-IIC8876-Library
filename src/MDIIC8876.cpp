@@ -1,19 +1,19 @@
 /******************************************************************************
-  MDIIC1508.cpp
-  MotorDriver IIC1508 I/O Expander Library Source File
+  MDIIC8876.cpp
+  MotorDriver IIC8876 I/O Expander Library Source File
   Creation Date: 06-11-2024
     @ YFROBOT
 ******************************************************************************/
 
 #include <Arduino.h>
-#include <MDIIC1508.h>
+#include <MDIIC8876.h>
 
-MDIIC1508::MDIIC1508()
+MDIIC8876::MDIIC8876()
 {
   _clkX = 0;
 }
 
-MDIIC1508::MDIIC1508(uint8_t address, uint8_t resetPin, uint8_t interruptPin, uint8_t oscillatorPin)
+MDIIC8876::MDIIC8876(uint8_t address, uint8_t resetPin, uint8_t interruptPin, uint8_t oscillatorPin)
 {
     // Store the received parameters into member variables
     deviceAddress = address;
@@ -23,10 +23,10 @@ MDIIC1508::MDIIC1508(uint8_t address, uint8_t resetPin, uint8_t interruptPin, ui
 }
 
 // 在类的析构函数中清除中断服务例程
-MDIIC1508::~MDIIC1508() {
+MDIIC8876::~MDIIC8876() {
 }
 
-uint8_t MDIIC1508::begin(uint8_t address, TwoWire &wirePort, uint8_t resetPin)
+uint8_t MDIIC8876::begin(uint8_t address, TwoWire &wirePort, uint8_t resetPin)
 {
     // Store the received parameters into member variables
     _i2cPort = &wirePort;
@@ -36,9 +36,9 @@ uint8_t MDIIC1508::begin(uint8_t address, TwoWire &wirePort, uint8_t resetPin)
     return init();
 }
 
-uint8_t MDIIC1508::init(void)
+uint8_t MDIIC8876::init(void)
 {
-    // Begin I2C should be done externally, before beginning MDIIC1508
+    // Begin I2C should be done externally, before beginning MDIIC8876
     Wire.begin();
 
     // If the reset pin is connected
@@ -48,147 +48,147 @@ uint8_t MDIIC1508::init(void)
         reset(0);
 
     // 电机驱动引脚配置
-    pinMode(M1PinA, MDIIC1508_ANALOG_OUTPUT);
-    pinMode(M1PinB, MDIIC1508_ANALOG_OUTPUT);
-    pinMode(M2PinA, MDIIC1508_ANALOG_OUTPUT);
-    pinMode(M2PinB, MDIIC1508_ANALOG_OUTPUT);
-    pinMode(M3PinA, MDIIC1508_ANALOG_OUTPUT);
-    pinMode(M3PinB, MDIIC1508_ANALOG_OUTPUT);
-    pinMode(M4PinA, MDIIC1508_ANALOG_OUTPUT);
-    pinMode(M4PinB, MDIIC1508_ANALOG_OUTPUT);
+    pinMode(M1PinA, MDIIC8876_ANALOG_OUTPUT);
+    pinMode(M1PinB, MDIIC8876_ANALOG_OUTPUT);
+    pinMode(M2PinA, MDIIC8876_ANALOG_OUTPUT);
+    pinMode(M2PinB, MDIIC8876_ANALOG_OUTPUT);
+    pinMode(M3PinA, MDIIC8876_ANALOG_OUTPUT);
+    pinMode(M3PinB, MDIIC8876_ANALOG_OUTPUT);
+    pinMode(M4PinA, MDIIC8876_ANALOG_OUTPUT);
+    pinMode(M4PinB, MDIIC8876_ANALOG_OUTPUT);
 
     // Communication test. We'll read from two registers with different
     // default values to verify communication.
-    uint8_t testRegisters = readByte(MDIIC1508_REG_INTERRUPT_MASK); // This should return 0xFF, Interrupt mask register address 0x09
+    uint8_t testRegisters = readByte(MDIIC8876_REG_INTERRUPT_MASK); // This should return 0xFF, Interrupt mask register address 0x09
 
     if (testRegisters == 0xFF)
     {
         // Set the clock to a default of 2MHz using internal
-        clock(MDIIC1508_INTERNAL_CLOCK_2MHZ);
+        clock(MDIIC8876_INTERNAL_CLOCK_2MHZ);
         return 1;
     }
 
     return 0;
 }
 
-void MDIIC1508::reset(bool hardware)
+void MDIIC8876::reset(bool hardware)
 {
   // if hardware bool is set
   if (hardware) {
-    // Check if bit 2 of MDIIC1508_REG_MISC is set
+    // Check if bit 2 of MDIIC8876_REG_MISC is set
     // if so nReset will not issue a POR, we'll need to clear that bit first
-    uint8_t regMisc = readByte(MDIIC1508_REG_MISC);
+    uint8_t regMisc = readByte(MDIIC8876_REG_MISC);
     if (regMisc & (1 << 2)) {
       regMisc &= ~(1 << 2);
-      writeByte(MDIIC1508_REG_MISC, regMisc);
+      writeByte(MDIIC8876_REG_MISC, regMisc);
     }
-    // Reset the MDIIC1508, the pin is active low
+    // Reset the MDIIC8876, the pin is active low
     pinMode(pinReset, OUTPUT);	  // set reset pin as output
     digitalWrite(pinReset, LOW);  // pull reset pin low
     delay(1);					  // Wait for the pin to settle
     digitalWrite(pinReset, HIGH); // pull reset pin back high
   } else {
     // Software reset command sequence:
-    writeByte(MDIIC1508_REG_RESET, 0x12);
-    writeByte(MDIIC1508_REG_RESET, 0x34);
+    writeByte(MDIIC8876_REG_RESET, 0x12);
+    writeByte(MDIIC8876_REG_RESET, 0x34);
   }
 }
 
-void MDIIC1508::pinDir(uint8_t pin, uint8_t inOut, uint8_t initialLevel)
+void MDIIC8876::pinDir(uint8_t pin, uint8_t inOut, uint8_t initialLevel)
 {
-  // The MDIIC1508 RegDir registers: MDIIC1508_REG_DIR, MDIIC1508_REG_DIR
+  // The MDIIC8876 RegDir registers: MDIIC8876_REG_DIR, MDIIC8876_REG_DIR
   //	0: IO is configured as an output
   //	1: IO is configured as an input
   uint8_t modeBit;
-  if ((inOut == OUTPUT) || (inOut == MDIIC1508_ANALOG_OUTPUT)) {
-    uint8_t tempRegData = readByte(MDIIC1508_REG_DATA);
+  if ((inOut == OUTPUT) || (inOut == MDIIC8876_ANALOG_OUTPUT)) {
+    uint8_t tempRegData = readByte(MDIIC8876_REG_DATA);
     if (initialLevel == LOW) {
       tempRegData &= ~(1 << pin);
-      writeByte(MDIIC1508_REG_DATA, tempRegData);
+      writeByte(MDIIC8876_REG_DATA, tempRegData);
     }
     modeBit = 0;
   } else {
     modeBit = 1;
   }
 
-  uint8_t tempRegDir = readByte(MDIIC1508_REG_DIR);
+  uint8_t tempRegDir = readByte(MDIIC8876_REG_DIR);
   if (modeBit)
     tempRegDir |= (1 << pin);
   else
     tempRegDir &= ~(1 << pin);
-  writeByte(MDIIC1508_REG_DIR, tempRegDir);
+  writeByte(MDIIC8876_REG_DIR, tempRegDir);
 
   // If INPUT_PULLUP was called, set up the pullup too:
   if (inOut == INPUT_PULLUP)
     writePin(pin, HIGH);
 
-  if (inOut == MDIIC1508_ANALOG_OUTPUT) {
+  if (inOut == MDIIC8876_ANALOG_OUTPUT) {
     ledDriverInit(pin);
   }
 }
 
-void MDIIC1508::pinMode(uint8_t pin, uint8_t inOut, uint8_t initialLevel)
+void MDIIC8876::pinMode(uint8_t pin, uint8_t inOut, uint8_t initialLevel)
 {
   pinDir(pin, inOut, initialLevel);
 }
 
-bool MDIIC1508::writePin(uint8_t pin, uint8_t highLow)
+bool MDIIC8876::writePin(uint8_t pin, uint8_t highLow)
 {
-  uint8_t tempRegDir = readByte(MDIIC1508_REG_DIR);
+  uint8_t tempRegDir = readByte(MDIIC8876_REG_DIR);
   if ((0xFF ^ tempRegDir) & (1 << pin)) { // If the pin is an output, write high/low
-    uint8_t tempRegData = readByte(MDIIC1508_REG_DATA);
+    uint8_t tempRegData = readByte(MDIIC8876_REG_DATA);
     if (highLow)
       tempRegData |= (1 << pin);
     else
       tempRegData &= ~(1 << pin);
-    return writeByte(MDIIC1508_REG_DATA, tempRegData);
+    return writeByte(MDIIC8876_REG_DATA, tempRegData);
   } else { // Otherwise the pin is an input, pull-up/down
-    uint8_t tempPullUp = readByte(MDIIC1508_REG_PULL_UP);
-    uint8_t tempPullDown = readByte(MDIIC1508_REG_PULL_DOWN);
+    uint8_t tempPullUp = readByte(MDIIC8876_REG_PULL_UP);
+    uint8_t tempPullDown = readByte(MDIIC8876_REG_PULL_DOWN);
 
     if (highLow) { // if HIGH, do pull-up, disable pull-down
       tempPullUp |= (1 << pin);
       tempPullDown &= ~(1 << pin);
-      return writeByte(MDIIC1508_REG_PULL_UP, tempPullUp) && writeByte(MDIIC1508_REG_PULL_DOWN, tempPullDown);
+      return writeByte(MDIIC8876_REG_PULL_UP, tempPullUp) && writeByte(MDIIC8876_REG_PULL_DOWN, tempPullDown);
     } else { // If LOW do pull-down, disable pull-up
       tempPullDown |= (1 << pin);
       tempPullUp &= ~(1 << pin);
-      return writeByte(MDIIC1508_REG_PULL_UP, tempPullUp) && writeByte(MDIIC1508_REG_PULL_DOWN, tempPullDown);
+      return writeByte(MDIIC8876_REG_PULL_UP, tempPullUp) && writeByte(MDIIC8876_REG_PULL_DOWN, tempPullDown);
     }
   }
 }
 
-bool MDIIC1508::digitalWrite(uint8_t pin, uint8_t highLow)
+bool MDIIC8876::digitalWrite(uint8_t pin, uint8_t highLow)
 {
   return writePin(pin, highLow);
 }
 
-uint8_t MDIIC1508::readPin(uint8_t pin)
+uint8_t MDIIC8876::readPin(uint8_t pin)
 {
-  uint8_t tempRegDir = readByte(MDIIC1508_REG_DIR);
+  uint8_t tempRegDir = readByte(MDIIC8876_REG_DIR);
 
   if (tempRegDir & (1 << pin)) // If the pin is an input
     //   if (1 << pin) // If the pin is an input
   {
-    uint8_t tempRegData = readByte(MDIIC1508_REG_DATA);
+    uint8_t tempRegData = readByte(MDIIC8876_REG_DATA);
     if (tempRegData & (1 << pin))
       return 1;
   }
   else
   {
-    // log_d("Pin %d not INPUT, MDIIC1508_REG_DIR: %d", pin, tempRegDir);
+    // log_d("Pin %d not INPUT, MDIIC8876_REG_DIR: %d", pin, tempRegDir);
   }
 
   return 0;
 }
 
-bool MDIIC1508::readPin(const uint8_t pin, bool *value)
+bool MDIIC8876::readPin(const uint8_t pin, bool *value)
 {
   uint8_t tempRegDir;
-  if (readByte(MDIIC1508_REG_DIR, &tempRegDir)) {
+  if (readByte(MDIIC8876_REG_DIR, &tempRegDir)) {
     if (tempRegDir & (1 << pin)) { // If the pin is an input
       uint8_t tempRegData;
-      if (readByte(MDIIC1508_REG_DATA, &tempRegData)) {
+      if (readByte(MDIIC8876_REG_DATA, &tempRegData)) {
         *value = (tempRegData & (1 << pin)) != 0;
         return true;
       };
@@ -202,45 +202,45 @@ bool MDIIC1508::readPin(const uint8_t pin, bool *value)
   return false;
 }
 
-uint8_t MDIIC1508::digitalRead(uint8_t pin)
+uint8_t MDIIC8876::digitalRead(uint8_t pin)
 {
   return readPin(pin);
 }
 
-bool MDIIC1508::digitalRead(uint8_t pin, bool *value)
+bool MDIIC8876::digitalRead(uint8_t pin, bool *value)
 {
   return readPin(pin, value);
 }
 
-void MDIIC1508::ledDriverInit(uint8_t pin, uint8_t freq /*= 1*/, bool log /*= false*/)
+void MDIIC8876::ledDriverInit(uint8_t pin, uint8_t freq /*= 1*/, bool log /*= false*/)
 {
   uint8_t tempByte;
 
   // Disable input buffer
   // Writing a 1 to the pin bit will disable that pins input buffer
-  tempByte = readByte(MDIIC1508_REG_INPUT_DISABLE);
+  tempByte = readByte(MDIIC8876_REG_INPUT_DISABLE);
   tempByte |= (1 << pin);
-  writeByte(MDIIC1508_REG_INPUT_DISABLE, tempByte);
+  writeByte(MDIIC8876_REG_INPUT_DISABLE, tempByte);
 
   // Disable pull-up
   // Writing a 0 to the pin bit will disable that pull-up resistor
-  tempByte = readByte(MDIIC1508_REG_PULL_UP);
+  tempByte = readByte(MDIIC8876_REG_PULL_UP);
   tempByte &= ~(1 << pin);
-  writeByte(MDIIC1508_REG_PULL_UP, tempByte);
+  writeByte(MDIIC8876_REG_PULL_UP, tempByte);
 
-  // Set direction to output (MDIIC1508_REG_DIR)
-  tempByte = readByte(MDIIC1508_REG_DIR);
+  // Set direction to output (MDIIC8876_REG_DIR)
+  tempByte = readByte(MDIIC8876_REG_DIR);
   tempByte &= ~(1 << pin); // 0=output
-  writeByte(MDIIC1508_REG_DIR, tempByte);
+  writeByte(MDIIC8876_REG_DIR, tempByte);
 
-  // Enable oscillator (MDIIC1508_REG_CLOCK)
-  tempByte = readByte(MDIIC1508_REG_CLOCK);
+  // Enable oscillator (MDIIC8876_REG_CLOCK)
+  tempByte = readByte(MDIIC8876_REG_CLOCK);
   tempByte |= (1 << 6);  // Internal 2MHz oscillator part 1 (set bit 6)
   tempByte &= ~(1 << 5); // Internal 2MHz oscillator part 2 (clear bit 5)
-  writeByte(MDIIC1508_REG_CLOCK, tempByte);
+  writeByte(MDIIC8876_REG_CLOCK, tempByte);
 
-  // Configure LED driver clock and mode (MDIIC1508_REG_MISC)
-  tempByte = readByte(MDIIC1508_REG_MISC);
+  // Configure LED driver clock and mode (MDIIC8876_REG_MISC)
+  tempByte = readByte(MDIIC8876_REG_MISC);
   if (log) {
     tempByte |= (1 << 7); // set logarithmic mode bank B
     tempByte |= (1 << 3); // set logarithmic mode bank A
@@ -256,33 +256,33 @@ void MDIIC1508::ledDriverInit(uint8_t pin, uint8_t freq /*= 1*/, bool log /*= fa
     uint8_t freq = (1 & 0x07) << 4; // freq should only be 3 bits from 6:4
     tempByte |= freq;
   }
-  writeByte(MDIIC1508_REG_MISC, tempByte);
+  writeByte(MDIIC8876_REG_MISC, tempByte);
 
-  // Enable LED driver operation (MDIIC1508_REG_LED_DRIVER_ENABLE)
-  tempByte = readByte(MDIIC1508_REG_LED_DRIVER_ENABLE);
+  // Enable LED driver operation (MDIIC8876_REG_LED_DRIVER_ENABLE)
+  tempByte = readByte(MDIIC8876_REG_LED_DRIVER_ENABLE);
   tempByte |= (1 << pin);
-  writeByte(MDIIC1508_REG_LED_DRIVER_ENABLE, tempByte);
+  writeByte(MDIIC8876_REG_LED_DRIVER_ENABLE, tempByte);
 
-  // Set MDIIC1508_REG_DATA bit low ~ LED driver started
-  tempByte = readByte(MDIIC1508_REG_DATA);
+  // Set MDIIC8876_REG_DATA bit low ~ LED driver started
+  tempByte = readByte(MDIIC8876_REG_DATA);
   tempByte &= ~(1 << pin);
-  writeByte(MDIIC1508_REG_DATA, tempByte);
+  writeByte(MDIIC8876_REG_DATA, tempByte);
 }
 
-void MDIIC1508::pwm(uint8_t pin, uint8_t iOn)
+void MDIIC8876::pwm(uint8_t pin, uint8_t iOn)
 {
   // Write the on intensity of pin
   // Linear mode: Ion = iOn
   // Log mode: Ion = f(iOn)
-  writeByte(MDIIC1508_REG_I_ON[pin], iOn);
+  writeByte(MDIIC8876_REG_I_ON[pin], iOn);
 }
 
-void MDIIC1508::analogWrite(uint8_t pin, uint8_t iOn)
+void MDIIC8876::analogWrite(uint8_t pin, uint8_t iOn)
 {
   pwm(pin, iOn);
 }
 
-void MDIIC1508::blink(uint8_t pin, unsigned long tOn, unsigned long tOff, uint8_t onIntensity, uint8_t offIntensity)
+void MDIIC8876::blink(uint8_t pin, unsigned long tOn, unsigned long tOff, uint8_t onIntensity, uint8_t offIntensity)
 {
   uint8_t onReg = calculateLEDTRegister(tOn);
   uint8_t offReg = calculateLEDTRegister(tOff);
@@ -290,7 +290,7 @@ void MDIIC1508::blink(uint8_t pin, unsigned long tOn, unsigned long tOff, uint8_
   setupBlink(pin, onReg, offReg, onIntensity, offIntensity, 0, 0);
 }
 
-void MDIIC1508::breathe(uint8_t pin, unsigned long tOn, unsigned long tOff, unsigned long rise, unsigned long fall, uint8_t onInt, uint8_t offInt, bool log)
+void MDIIC8876::breathe(uint8_t pin, unsigned long tOn, unsigned long tOff, unsigned long rise, unsigned long fall, uint8_t onInt, uint8_t offInt, bool log)
 {
   offInt = constrain(offInt, 0, 7);
 
@@ -303,7 +303,7 @@ void MDIIC1508::breathe(uint8_t pin, unsigned long tOn, unsigned long tOff, unsi
   setupBlink(pin, onReg, offReg, onInt, offInt, riseTime, fallTime, log);
 }
 
-void MDIIC1508::setupBlink(uint8_t pin, uint8_t tOn, uint8_t tOff, uint8_t onIntensity, uint8_t offIntensity, uint8_t tRise, uint8_t tFall, bool log)
+void MDIIC8876::setupBlink(uint8_t pin, uint8_t tOn, uint8_t tOff, uint8_t onIntensity, uint8_t offIntensity, uint8_t tRise, uint8_t tFall, bool log)
 {
   ledDriverInit(pin, log);
 
@@ -314,17 +314,17 @@ void MDIIC1508::setupBlink(uint8_t pin, uint8_t tOn, uint8_t tOff, uint8_t onInt
   // Write the time on
   // 1-15:  TON = 64 * tOn * (255/ClkX)
   // 16-31: TON = 512 * tOn * (255/ClkX)
-  writeByte(MDIIC1508_REG_T_ON[pin], tOn);
+  writeByte(MDIIC8876_REG_T_ON[pin], tOn);
 
   // Write the time/intensity off register
   // 1-15:  TOFF = 64 * tOff * (255/ClkX)
   // 16-31: TOFF = 512 * tOff * (255/ClkX)
   // linear Mode - IOff = 4 * offIntensity
   // log mode - Ioff = f(4 * offIntensity)
-  writeByte(MDIIC1508_REG_OFF[pin], (tOff << 3) | offIntensity);
+  writeByte(MDIIC8876_REG_OFF[pin], (tOff << 3) | offIntensity);
 
   // Write the on intensity:
-  writeByte(MDIIC1508_REG_I_ON[pin], onIntensity);
+  writeByte(MDIIC8876_REG_I_ON[pin], onIntensity);
 
   // Prepare tRise and tFall
   tRise &= 0x1F; // tRise is a 5-bit value
@@ -334,24 +334,24 @@ void MDIIC1508::setupBlink(uint8_t pin, uint8_t tOn, uint8_t tOff, uint8_t onInt
   // 0: Off
   // 1-15:  TRise =      (regIOn - (4 * offIntensity)) * tRise * (255/ClkX)
   // 16-31: TRise = 16 * (regIOn - (4 * offIntensity)) * tRise * (255/ClkX)
-  if (MDIIC1508_REG_T_RISE[pin] != 0xFF)
-    writeByte(MDIIC1508_REG_T_RISE[pin], tRise);
+  if (MDIIC8876_REG_T_RISE[pin] != 0xFF)
+    writeByte(MDIIC8876_REG_T_RISE[pin], tRise);
   // Write regTFall
   // 0: off
   // 1-15:  TFall =      (regIOn - (4 * offIntensity)) * tFall * (255/ClkX)
   // 16-31: TFall = 16 * (regIOn - (4 * offIntensity)) * tFall * (255/ClkX)
-  if (MDIIC1508_REG_T_FALL[pin] != 0xFF)
-    writeByte(MDIIC1508_REG_T_FALL[pin], tFall);
+  if (MDIIC8876_REG_T_FALL[pin] != 0xFF)
+    writeByte(MDIIC8876_REG_T_FALL[pin], tFall);
 }
 
-void MDIIC1508::sync(void)
+void MDIIC8876::sync(void)
 {
   // First check if nReset functionality is set
-  uint8_t regMisc = readByte(MDIIC1508_REG_MISC);
+  uint8_t regMisc = readByte(MDIIC8876_REG_MISC);
   if (!(regMisc & 0x04))
   {
     regMisc |= (1 << 2);
-    writeByte(MDIIC1508_REG_MISC, regMisc);
+    writeByte(MDIIC8876_REG_MISC, regMisc);
   }
 
   // Toggle nReset pin to sync LED timers
@@ -361,33 +361,33 @@ void MDIIC1508::sync(void)
   digitalWrite(pinReset, HIGH); // pull reset pin back high
 
   // Return nReset to POR functionality
-  writeByte(MDIIC1508_REG_MISC, (regMisc & ~(1 << 2)));
+  writeByte(MDIIC8876_REG_MISC, (regMisc & ~(1 << 2)));
 }
 
-void MDIIC1508::debounceConfig(uint8_t configValue)
+void MDIIC8876::debounceConfig(uint8_t configValue)
 {
   // First make sure clock is configured
-  uint8_t tempByte = readByte(MDIIC1508_REG_MISC);
+  uint8_t tempByte = readByte(MDIIC8876_REG_MISC);
   if ((tempByte & 0x70) == 0)
   {
     tempByte |= (1 << 4); // Just default to no divider if not set
-    writeByte(MDIIC1508_REG_MISC, tempByte);
+    writeByte(MDIIC8876_REG_MISC, tempByte);
   }
-  tempByte = readByte(MDIIC1508_REG_CLOCK);
+  tempByte = readByte(MDIIC8876_REG_CLOCK);
   if ((tempByte & 0x60) == 0)
   {
     tempByte |= (1 << 6); // default to internal osc.
-    writeByte(MDIIC1508_REG_CLOCK, tempByte);
+    writeByte(MDIIC8876_REG_CLOCK, tempByte);
   }
 
   configValue &= 0b111; // 3-bit value
-  writeByte(MDIIC1508_REG_DEBOUNCE_CONFIG, configValue);
+  writeByte(MDIIC8876_REG_DEBOUNCE_CONFIG, configValue);
 }
 
-void MDIIC1508::debounceTime(uint8_t time)
+void MDIIC8876::debounceTime(uint8_t time)
 {
   if (_clkX == 0)					   // If clock hasn't been set up.
-    clock(MDIIC1508_INTERNAL_CLOCK_2MHZ, 1); // Set clock to 2MHz.
+    clock(MDIIC8876_INTERNAL_CLOCK_2MHZ, 1); // Set clock to 2MHz.
 
   // Debounce time-to-byte map: (assuming fOsc = 2MHz)
   // 0: 0.5ms		1: 1ms
@@ -411,19 +411,19 @@ void MDIIC1508::debounceTime(uint8_t time)
   debounceConfig(configValue);
 }
 
-void MDIIC1508::debounceEnable(uint8_t pin)
+void MDIIC8876::debounceEnable(uint8_t pin)
 {
-  uint8_t debounceEnable = readByte(MDIIC1508_REG_DEBOUNCE_ENABLE);
+  uint8_t debounceEnable = readByte(MDIIC8876_REG_DEBOUNCE_ENABLE);
   debounceEnable |= (1 << pin);
-  writeByte(MDIIC1508_REG_DEBOUNCE_ENABLE, debounceEnable);
+  writeByte(MDIIC8876_REG_DEBOUNCE_ENABLE, debounceEnable);
 }
 
-void MDIIC1508::debouncePin(uint8_t pin)
+void MDIIC8876::debouncePin(uint8_t pin)
 {
   debounceEnable(pin);
 }
 
-void MDIIC1508::debounceKeypad(uint8_t time, uint8_t numRows, uint8_t numCols)
+void MDIIC8876::debounceKeypad(uint8_t time, uint8_t numRows, uint8_t numCols)
 {
   // Set up debounce time:
   debounceTime(time);
@@ -435,12 +435,12 @@ void MDIIC1508::debounceKeypad(uint8_t time, uint8_t numRows, uint8_t numCols)
     debouncePin(i);
 }
 
-void MDIIC1508::enableInterrupt(uint8_t pin, uint8_t riseFall)
+void MDIIC8876::enableInterrupt(uint8_t pin, uint8_t riseFall)
 {
-  // Set MDIIC1508_REG_INTERRUPT_MASK
-  uint8_t tempByte = readByte(MDIIC1508_REG_INTERRUPT_MASK);
+  // Set MDIIC8876_REG_INTERRUPT_MASK
+  uint8_t tempByte = readByte(MDIIC8876_REG_INTERRUPT_MASK);
   tempByte &= ~(1 << pin); // 0 = event on IO will trigger interrupt
-  writeByte(MDIIC1508_REG_INTERRUPT_MASK, tempByte);
+  writeByte(MDIIC8876_REG_INTERRUPT_MASK, tempByte);
 
   uint8_t sensitivity = 0;
   switch (riseFall)
@@ -456,7 +456,7 @@ void MDIIC1508::enableInterrupt(uint8_t pin, uint8_t riseFall)
       break;
   }
 
-  // Set MDIIC1508_REG_SENSE_XXX
+  // Set MDIIC8876_REG_SENSE_XXX
   // Sensitivity is set as follows:
   // 00: None
   // 01: Rising
@@ -467,9 +467,9 @@ void MDIIC1508::enableInterrupt(uint8_t pin, uint8_t riseFall)
 
   // Need to select between two words. One for bank A, one for B.
   if (pin >= 8)
-    senseRegister = MDIIC1508_REG_SENSE_HIGH;
+    senseRegister = MDIIC8876_REG_SENSE_HIGH;
   else
-    senseRegister = MDIIC1508_REG_SENSE_HIGH;
+    senseRegister = MDIIC8876_REG_SENSE_HIGH;
 
   tempByte = readByte(senseRegister);
   tempByte &= ~(0b11 << pinMask);		  // Mask out the bits we want to write
@@ -477,15 +477,15 @@ void MDIIC1508::enableInterrupt(uint8_t pin, uint8_t riseFall)
   writeByte(senseRegister, tempByte);
 }
 
-uint8_t MDIIC1508::interruptSource(bool clear /* =true*/)
+uint8_t MDIIC8876::interruptSource(bool clear /* =true*/)
 {
-  uint8_t intSource = readByte(MDIIC1508_REG_INTERRUPT_SOURCE);
+  uint8_t intSource = readByte(MDIIC8876_REG_INTERRUPT_SOURCE);
   if (clear)
-    writeByte(MDIIC1508_REG_INTERRUPT_SOURCE, 0xFFFF); // Clear interrupts
+    writeByte(MDIIC8876_REG_INTERRUPT_SOURCE, 0xFFFF); // Clear interrupts
   return intSource;
 }
 
-bool MDIIC1508::checkInterrupt(uint8_t pin)
+bool MDIIC8876::checkInterrupt(uint8_t pin)
 {
   if (interruptSource(false) & (1 << pin))
     return true;
@@ -493,12 +493,12 @@ bool MDIIC1508::checkInterrupt(uint8_t pin)
   return false;
 }
 
-void MDIIC1508::clock(uint8_t oscSource, uint8_t oscDivider, uint8_t oscPinFunction, uint8_t oscFreqOut)
+void MDIIC8876::clock(uint8_t oscSource, uint8_t oscDivider, uint8_t oscPinFunction, uint8_t oscFreqOut)
 {
   configClock(oscSource, oscPinFunction, oscFreqOut, oscDivider);
 }
 
-void MDIIC1508::configClock(uint8_t oscSource /*= 2*/, uint8_t oscPinFunction /*= 0*/, uint8_t oscFreqOut /*= 0*/, uint8_t oscDivider /*= 1*/)
+void MDIIC8876::configClock(uint8_t oscSource /*= 2*/, uint8_t oscPinFunction /*= 0*/, uint8_t oscFreqOut /*= 0*/, uint8_t oscDivider /*= 1*/)
 {
   // RegClock constructed as follows:
   //	6:5 - Oscillator frequency souce
@@ -511,7 +511,7 @@ void MDIIC1508::configClock(uint8_t oscSource /*= 2*/, uint8_t oscPinFunction /*
   oscPinFunction = (oscPinFunction & 1) << 4; // 1-bit value bit 4
   oscFreqOut = (oscFreqOut & 0b1111);			// 4-bit value, bits 3:0
   uint8_t regClock = oscSource | oscPinFunction | oscFreqOut;
-  writeByte(MDIIC1508_REG_CLOCK, regClock);
+  writeByte(MDIIC8876_REG_CLOCK, regClock);
 
   // Config RegMisc[6:4] with oscDivider
   // 0: off, else ClkX = fOSC / (2^(RegMisc[6:4] -1))
@@ -519,13 +519,13 @@ void MDIIC1508::configClock(uint8_t oscSource /*= 2*/, uint8_t oscPinFunction /*
   _clkX = 2000000.0 / (1 << (oscDivider - 1)); // Update private clock variable
   oscDivider = (oscDivider & 0b111) << 4;		 // 3-bit value, bits 6:4
 
-  uint8_t regMisc = readByte(MDIIC1508_REG_MISC);
+  uint8_t regMisc = readByte(MDIIC8876_REG_MISC);
   regMisc &= ~(0b111 << 4);
   regMisc |= oscDivider;
-  writeByte(MDIIC1508_REG_MISC, regMisc);
+  writeByte(MDIIC8876_REG_MISC, regMisc);
 }
 
-uint8_t MDIIC1508::calculateLEDTRegister(uint8_t ms)
+uint8_t MDIIC8876::calculateLEDTRegister(uint8_t ms)
 {
   uint8_t regOn1, regOn2;
   float timeOn1, timeOn2;
@@ -547,7 +547,7 @@ uint8_t MDIIC1508::calculateLEDTRegister(uint8_t ms)
     return regOn2;
 }
 
-uint8_t MDIIC1508::calculateSlopeRegister(uint8_t ms, uint8_t onIntensity, uint8_t offIntensity)
+uint8_t MDIIC8876::calculateSlopeRegister(uint8_t ms, uint8_t onIntensity, uint8_t offIntensity)
 {
   uint16_t regSlope1, regSlope2;
   float regTime1, regTime2;
@@ -578,7 +578,7 @@ uint8_t MDIIC1508::calculateSlopeRegister(uint8_t ms, uint8_t onIntensity, uint8
 //	- deviceAddress should already be set by the constructor.
 //	- Return value is the byte read from registerAddress
 //		- Currently returns 0 if communication has timed out
-uint8_t MDIIC1508::readByte(uint8_t registerAddress)
+uint8_t MDIIC8876::readByte(uint8_t registerAddress)
 {
   uint8_t readValue;
   // Commented the line as variable seems unused;
@@ -594,7 +594,7 @@ uint8_t MDIIC1508::readByte(uint8_t registerAddress)
   return readValue;
 }
 
-bool MDIIC1508::readByte(uint8_t registerAddress, uint8_t *value)
+bool MDIIC8876::readByte(uint8_t registerAddress, uint8_t *value)
 {
   return readBytes(registerAddress, value, 1);
 }
@@ -605,12 +605,12 @@ bool MDIIC1508::readByte(uint8_t registerAddress, uint8_t *value)
 //	- destination is an array of bytes where the read values will be stored into
 //	- length is the number of bytes to be read
 //	- Return boolean true if succesfull
-bool MDIIC1508::readBytes(uint8_t firstRegisterAddress, uint8_t *destination, uint8_t length)
+bool MDIIC8876::readBytes(uint8_t firstRegisterAddress, uint8_t *destination, uint8_t length)
 {
   _i2cPort->beginTransmission(deviceAddress);
   _i2cPort->write(firstRegisterAddress);
   uint8_t endResult = _i2cPort->endTransmission();
-  bool result = (endResult == MDIIC1508_I2C_ERROR_OK) && (_i2cPort->requestFrom(deviceAddress, length) == length);
+  bool result = (endResult == MDIIC8876_I2C_ERROR_OK) && (_i2cPort->requestFrom(deviceAddress, length) == length);
 
   if (result)
   {
@@ -627,12 +627,12 @@ bool MDIIC1508::readBytes(uint8_t firstRegisterAddress, uint8_t *destination, ui
 //	- writeValue is written to registerAddress
 //	- deviceAddres should already be set from the constructor
 //	- Return value: true if succeeded, false if failed
-bool MDIIC1508::writeByte(uint8_t registerAddress, uint8_t writeValue)
+bool MDIIC8876::writeByte(uint8_t registerAddress, uint8_t writeValue)
 {
   _i2cPort->beginTransmission(deviceAddress);
   bool result = _i2cPort->write(registerAddress) && _i2cPort->write(writeValue);
   uint8_t endResult = _i2cPort->endTransmission();
-  return result && (endResult == MDIIC1508_I2C_ERROR_OK);
+  return result && (endResult == MDIIC8876_I2C_ERROR_OK);
 }
 
 // writeBytes(uint8_t firstRegisterAddress, uint8_t * writeArray, uint8_t length)
@@ -642,18 +642,18 @@ bool MDIIC1508::writeByte(uint8_t registerAddress, uint8_t writeValue)
 //	- writeArray should be an array of byte values to be written.
 //	- length should be the number of bytes to be written.
 //	- Return value: true if succeeded, false if failed
-bool MDIIC1508::writeBytes(uint8_t firstRegisterAddress, uint8_t *writeArray, uint8_t length)
+bool MDIIC8876::writeBytes(uint8_t firstRegisterAddress, uint8_t *writeArray, uint8_t length)
 {
   _i2cPort->beginTransmission(deviceAddress);
   bool result = _i2cPort->write(firstRegisterAddress);
   result = _i2cPort->write(writeArray, length);
   uint8_t endResult = _i2cPort->endTransmission();
-  return result && (endResult == MDIIC1508_I2C_ERROR_OK);
+  return result && (endResult == MDIIC8876_I2C_ERROR_OK);
 }
 
 
 /**
- * IIC1508电机驱动 SX1508-DRV8837：设置电机速度
+ * IIC8876电机驱动 SX1508-TMI8876：设置电机速度
  * 
  * 本函数用于通过模拟输出控制电机的速度。根据传入的速度值，决定电机的旋转方向和速度。
  * 通过调整两个引脚的PWM值，实现电机的正转、反转和停止。
@@ -665,7 +665,7 @@ bool MDIIC1508::writeBytes(uint8_t firstRegisterAddress, uint8_t *writeArray, ui
  *               负值表示电机反转，值越小速度越快。
  *               零表示电机停止。
  */
-void MDIIC1508::setMotorSpeed(int pinA, int pinB, int speed) {
+void MDIIC8876::setMotorSpeed(int pinA, int pinB, int speed) {
     // 当速度大于0时，电机正转，将pinA设为速度值，pinB设为0。
     if (speed > 0) {
         analogWrite(pinA, speed);
@@ -682,7 +682,7 @@ void MDIIC1508::setMotorSpeed(int pinA, int pinB, int speed) {
 }
 
 /**
- * IIC1508电机驱动 SX1508-DRV8837：设置四个电机的速度
+ * IIC8876电机驱动 SX1508-TMI8876：设置四个电机的速度
  * 
  * 该函数用于分别设置四个电机的速度，确保速度值在-255到255的范围内。
  * 超出范围的速度值会被限制在范围内，以保护电机和控制系统。
@@ -692,7 +692,7 @@ void MDIIC1508::setMotorSpeed(int pinA, int pinB, int speed) {
  * @param m3Speed 电机3的速度，范围为-255到255。
  * @param m4Speed 电机4的速度，范围为-255到255。
  */
-void MDIIC1508::setMotor(int m1Speed, int m2Speed, int m3Speed, int m4Speed) {
+void MDIIC8876::setMotor(int m1Speed, int m2Speed, int m3Speed, int m4Speed) {
     // 限制速度值在-255到255之间
     // 参数范围检查并修正，确保速度在 -255 到 255 之间
     m1Speed = constrain(m1Speed, -255, 255);
@@ -708,12 +708,12 @@ void MDIIC1508::setMotor(int m1Speed, int m2Speed, int m3Speed, int m4Speed) {
 }
 
 /**
- * IIC1508电机驱动 SX1508-DRV8837：设置电机速度
+ * IIC8876电机驱动 SX1508-TMI8876：设置电机速度
  * 
  * @param motorId 电机编号，范围为1到4，超出范围将默认为5，即所有电机。
  * @param speed 电机速度，取值范围为-255到255，速度的正负代表电机的旋转方向。
  */
-void MDIIC1508::setMotor(int motorId, int speed) {
+void MDIIC8876::setMotor(int motorId, int speed) {
     // 限制速度值在-255到255之间
     // 参数范围检查并修正，确保速度在 -255 到 255 之间
     speed = constrain(speed, -255, 255);
@@ -743,11 +743,11 @@ void MDIIC1508::setMotor(int motorId, int speed) {
 }
 
 /**
- * @brief IIC1508电机驱动 SX1508-DRV8837：停止指定电机的运行
+ * @brief IIC8876电机驱动 SX1508-TMI8876：停止指定电机的运行
  * 
  * @param motorId 电机标识符，用于指定要停止的电机(1, 2, 3, 4其他值则表示所有电机) 
  */
-void MDIIC1508::stopMotor(int motorId) {
+void MDIIC8876::stopMotor(int motorId) {
     // 设置电机控制参数为0，以停止电机运行
     setMotor(motorId, 0);
 }
