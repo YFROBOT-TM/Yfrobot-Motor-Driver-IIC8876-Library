@@ -4,7 +4,7 @@ YFROBOT IIC8876-4路电机驱动模块库 - YFROBOT Motor Driver IIC8876 Library
 通过IIC总线驱动4路直流电机，支持正反转、速度调节。
 
 可用模块： IIC_MOTORDRIVER_IIC8876
-![](./assets/YF_MotorDriver_IIC8876.jpg)
+![](./assets/YF_MotorDriver_IIC8876.png)
 
 
 ## 相关链接 Links
