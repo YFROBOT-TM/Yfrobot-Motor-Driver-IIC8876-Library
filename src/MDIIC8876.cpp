@@ -49,13 +49,18 @@ uint8_t MDIIC8876::init(void)
 
     // 电机驱动引脚配置
     pinMode(M1EN, MDIIC8876_ANALOG_OUTPUT);
-    pinMode(M1PH, MDIIC8876_DIGITAL_OUTPUT);
+    // pinMode(M1PH, MDIIC8876_ANALOG_OUTPUT);
+    pinMode(M1PH, OUTPUT);
     pinMode(M2EN, MDIIC8876_ANALOG_OUTPUT);
-    pinMode(M2PH, MDIIC8876_DIGITAL_OUTPUT);
+    // pinMode(M2PH, MDIIC8876_ANALOG_OUTPUT);
+    pinMode(M2PH, OUTPUT);
     pinMode(M3EN, MDIIC8876_ANALOG_OUTPUT);
-    pinMode(M3PH, MDIIC8876_DIGITAL_OUTPUT);
+    // pinMode(M3PH, MDIIC8876_ANALOG_OUTPUT);
+    pinMode(M3PH, OUTPUT);
     pinMode(M4EN, MDIIC8876_ANALOG_OUTPUT);
-    pinMode(M4PH, MDIIC8876_DIGITAL_OUTPUT);
+    // pinMode(M4PH, MDIIC8876_ANALOG_OUTPUT);
+    pinMode(M4PH, OUTPUT);
+
 
     // Communication test. We'll read from two registers with different
     // default values to verify communication.
@@ -666,14 +671,20 @@ bool MDIIC8876::writeBytes(uint8_t firstRegisterAddress, uint8_t *writeArray, ui
  *               零表示电机停止。
  */
 void MDIIC8876::setMotorSpeed(int pin_en, int pin_ph, int speed) {
+    
+    /*  analogWrite 输出反向 ，255停止 0最大速度  */
+
     if (speed > 0) {    // 当速度大于0时，电机正转，pin_ph设为1，将pin_en设为速度值。
-        digitalWrite(pin_ph, 1); // 正转
-        analogWrite(pin_en, speed);
+        digitalWrite(pin_ph, HIGH); // 正转
+        analogWrite(pin_en, 255 - speed);
+        Serial.println(speed);
     } else if (speed < 0) { // 当速度小于0时，电机反转，pin_ph设为0，将pin_en设为速度的绝对值。
-        digitalWrite(pin_ph, 0); // 反转
-        analogWrite(pin_en, abs(speed));
+        digitalWrite(pin_ph, LOW); // 反转
+        analogWrite(pin_en, abs(speed + 255));
+        Serial.println(speed);
     } else {    // 当速度为0时，电机停止，EN引脚设为0，刹车。
-        analogWrite(pin_en, 0);
+        analogWrite(pin_en, 255);
+        Serial.println(speed);
     }
 }
 
